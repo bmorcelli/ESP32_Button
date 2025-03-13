@@ -18,6 +18,8 @@ public:
     // Constructors for gpio button
     Button(gpio_num_t pin, bool pullup);
 
+    Button(button_config_t btn);
+
     // Constructors for gpio button
     Button(gpio_num_t pin, bool pullup, uint8_t adc_channel, uint8_t button_index, uint16_t min, uint16_t max);
 
@@ -69,11 +71,22 @@ public:
     void setParam(button_param_t param, void *value);
     void resume(void);
     void stop(void);
+    inline button_handle_t btn(void) { return _handle; };
+
 
 private:
     // Private variables
     gpio_num_t _button_pin;
     button_handle_t _handle;
+    button_config_t cfg = {
+        .type = BUTTON_TYPE_GPIO, // Set button type as GPIO
+        .long_press_time = CONFIG_BUTTON_LONG_PRESS_TIME_MS, // Set long press time
+        .short_press_time = CONFIG_BUTTON_SHORT_PRESS_TIME_MS, // Set short press time
+        .gpio_button_config = {
+            .gpio_num = GPIO_NUM_NC, // Set GPIO pin number
+            .active_level = false // Set active level based on pullup parameter
+        }
+    };
 };
 
 #endif

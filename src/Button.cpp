@@ -16,29 +16,26 @@ static const char *TAG = "arduino-button";
     if (result != ESP_OK) { \
         ESP_LOGE(TAG, "%s(%d): %s, Error Code: %d", __FUNCTION__, __LINE__, message, result); \
     }
-
-// Constructor for button using GPIO pin
-Button::Button(gpio_num_t pin, bool pullup)
-{
-    _button_pin = pin;
+Button::Button(button_config_t btn) {
+    cfg=btn;
+    _button_pin = (gpio_num_t)btn.gpio_button_config.gpio_num;
 
     // Set pin mode based on pullup parameter
-    gpio_set_pull_mode(_button_pin, pullup ? GPIO_PULLUP_ONLY : GPIO_PULLDOWN_ONLY);
-
+    gpio_set_pull_mode(_button_pin, btn.gpio_button_config.active_level ? GPIO_PULLUP_ONLY : GPIO_PULLDOWN_ONLY);
 
     // Configure button using GPIO
-    button_config_t cfg = {
-        .type = BUTTON_TYPE_GPIO, // Set button type as GPIO
-        .long_press_time = CONFIG_BUTTON_LONG_PRESS_TIME_MS, // Set long press time
-        .short_press_time = CONFIG_BUTTON_SHORT_PRESS_TIME_MS, // Set short press time
-        .gpio_button_config = {
-            .gpio_num = pin, // Set GPIO pin number
-            .active_level = pullup // Set active level based on pullup parameter
-        }
-    };
     _handle = iot_button_create(&cfg);
     // Print button created message for debugging purposes
     ESP_LOGI(TAG, "Button created");
+
+}
+// Constructor for button using GPIO pin
+Button::Button(gpio_num_t pin, bool pullup)
+{
+    // Configure button using GPIO
+    Button::cfg.gpio_button_config.gpio_num = pin;
+    Button::cfg.gpio_button_config.active_level = pullup;
+    Button(Button::cfg);
 }
 
 // Constructor for button using ADC pin
